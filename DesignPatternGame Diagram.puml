@@ -1,0 +1,231 @@
+@startuml
+
+package training.game.controller{
+
+class GameMap{
+- actors: List<Actor>
+- messageObserver: Observer
++ GameMap(actors: List<Actor>, messageObserver: Observer)
++ getCharMap(): char[][]
++ move(direction: Direction): void
++ getResult(): Result
++ setResult(result: Result): void
++ getMessageObserver(): Observer
++ getActors(): List<Actor>
++ findPlayer(): Player
++ findActor(position: Position): Actor
++ addActor(actor: Actor): void
++ removeActor(actor: Actor): void
+}
+
+enum Result{
+WIN
+LOSE
+}
+
+GameMap "1..n" o---right "1..n" Result :result
+
+}
+
+@enduml
+
+@startuml
+
+package training.game.actors{
+
+abstract Actor{
+- position: Position
+- gameMap: GameMap
++ Actor()
++ interact(player: Player): abstract void
++ getCharacter(): abstract char
++ getPosition(): Position
++ setPosition(position: Position): Position
++ getGameMap(): GameMap
++ setGameMap(gameMap: GameMap): void
+}
+
+}
+
+package training.game.domain{
+
+class Player{
++ CHARACTER = P
+- armor: int
+- score: int
++ Player()
++ damage(damage: int): void
++ getScore(): int
++ setScore(score: int): void
++ addScore(): int
++ getArmor(): int
++ setArmor(armor: int): void
++ isDead(): boolean
+}
+
+Actor <|-- Player
+
+class ProtectedPlayer{
++ CHARACTER = S
++ProtectedPlayer()
+}
+
+Player <|-- ProtectedPlayer
+
+class Shield{
++ CHARACTER = +
++ Shield()
++ upgrade(player: Player): ProtectedPlayer
+}
+
+Actor <|-- Shield
+
+class Bonus{
++ CHARACTER = $
++ Bonus()
+}
+
+Actor <|-- Bonus
+
+class Enemy{
++ CHARACTER = #
++ Enemy()
++ setDamageStrategy(damageStrategy: DamageStrategy): void
+}
+
+Actor <|-- Enemy
+
+class Exit{
++ CHARACTER = E
++ Exit()
+}
+
+Actor <|-- Exit
+
+class Position{
+- x: int
+- y: int
++ Position(x: int, y:int)
++ getX(): int
++ getY(): int
+}
+}
+
+@enduml
+
+@startuml
+
+package training.game.strategy{
+
+interface DamageStrategy{
++ getEnemyDamage(): Integer
+}
+
+class WeakDamageStrategy{
+- ENEMY_DAMAGE = 50
+}
+
+class StrongDamageStrategy{
+- ENEMY_DAMAGE = 100
+}
+
+Enemy "1..n" -right--> "1..n" DamageStrategy :damageStrategy
+DamageStrategy <|.. WeakDamageStrategy
+DamageStrategy <|.. StrongDamageStrategy
+
+}
+
+@enduml
+
+@startuml
+
+package training.game.observer{
+
+interface Observer{
++ update(message: String): void
+}
+
+class Observable{
++ addObserver(observer: Observer): void
++ notifyObservers(message: String): void
+}
+
+class MessageObserver{
+- message: String
++ MessageObserver()
++ getMessage(): String
+}
+
+Observable "1..n" -right--> "1..n" Observer: observers
+Observer <|.. MessageObserver
+
+}
+
+@enduml
+
+@startuml
+
+package training.game{
+
+class Application{
+
+}
+
+}
+
+package training.game.view{
+
+class ConsoleView{
++ ConsoleView()
++ printControls(): void
++ readDamageStrategy(): DamageStrategy
++ printGameStart(): void
++ printPlayerDetails(player: Player): void
++ printGameMap(map: char[][]): void
++ readDirection(): Direction
++ printResult(result: Result): void
+}
+
+}
+
+package training.game.directions{
+
+enum Direction{
+UP
+DOWN
+LEFT
+RIGHT
+}
+
+}
+
+@enduml
+
+@startuml
+package training.game.data{
+
+interface GameMapLoader{
++ load(): GameMap
+}
+
+class FileGameMapLoader{
+- fileName: String
+- actorFactory: ActorFactory
++ FileGameMapLoader(fileName: String, actorFactory: ActorFactory)
+}
+
+GameMapLoader <|.. FileGameMapLoader
+
+}
+
+package training.game.factory{
+
+class ActorFactory{
+- damageStrategy: DamageStrategy
++ ActorFactory(damageStrategy: DamageStrategy)
++ createActor(c: char)
+}
+}
+
+@enduml
+
